@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+#-*- coding: utf8 -*-
+"""Programme de vérification de changement d'adresse IP publique"""
+import smtplib
+import requests
+
+def mailing(content):
+    """Fonction de mailing"""
+    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    server.login("EMAIL_SENDER", "PASSWORD")
+    server.sendmail("EMAIL_SENDER", "EMAIL_RECEIVER", content)
+    server.quit()
+
+
+try:
+    CIP = open("/var/tmp/CURRENT_IP", "r")
+    CURRENT_IP = CIP.read().strip()
+    CIP.close()
+except IOError:
+    CURRENT_IP = "0.0.0.0"
+
+
+REQUEST = requests.get("http://icanhazip.com")
+CHECK_IP = REQUEST.text.strip()
+
+
+#print("CURRENT_IP=",CURRENT_IP)
+#print("CHECK_IP=",CHECK_IP)
+
+if CHECK_IP != CURRENT_IP:
+#    print("changement")
+    mailing(CHECK_IP)
+    CIP = open("/var/tmp/CURRENT_IP", "w")
+    CIP.write(CHECK_IP)
+    CIP.close()
